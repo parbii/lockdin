@@ -74,11 +74,13 @@ export default function HomePage() {
         <motion.div variants={fadeUp}>
           <Link href={`/app/mindset/${nextModule.id}`}>
             <Card className="bg-gradient-to-br from-primary/20 via-card to-card border-primary/30 hover:border-primary/60 transition-colors cursor-pointer">
-              <div className="flex items-start gap-4">
-                <div className="text-4xl">{nextModule.emoji}</div>
+              <div className="flex items-start gap-5">
+                <div className="text-4xl font-bold font-mono tabular-nums text-primary leading-none pt-1">
+                  {String(nextModule.order).padStart(2, "0")}
+                </div>
                 <div className="flex-1 min-w-0">
                   <div className="text-xs uppercase tracking-wider text-primary font-bold mb-1">
-                    Recommended next · Module {nextModule.order}
+                    Recommended next
                   </div>
                   <h2 className="text-xl font-bold">{nextModule.title}</h2>
                   <p className="text-sm text-muted-foreground mt-1">{nextModule.subtitle}</p>

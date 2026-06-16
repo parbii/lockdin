@@ -70,15 +70,13 @@ export default function MindsetHubPage() {
                     completed ? "border-primary/40" : "border-border hover:border-border/80"
                   }`}
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="text-3xl">{m.emoji}</div>
-                    {completed ? (
+                  <div className="flex items-start justify-between mb-4">
+                    <div className={`text-3xl font-bold tracking-tight font-mono tabular-nums ${completed ? "text-primary" : "text-foreground/90"}`}>
+                      {String(i + 1).padStart(2, "0")}
+                    </div>
+                    {completed && (
                       <div className="h-6 w-6 rounded-full bg-primary flex items-center justify-center">
                         <Check className="h-3.5 w-3.5 text-primary-foreground" />
-                      </div>
-                    ) : (
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {String(i + 1).padStart(2, "0")}
                       </div>
                     )}
                   </div>

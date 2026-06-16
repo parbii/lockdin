@@ -83,13 +83,15 @@ export default function ModuleDetailPage({ params }: { params: Promise<{ moduleI
       </Link>
 
       <motion.header variants={fadeUp} initial="hidden" animate="visible" className="mb-8">
-        <div className="text-xs uppercase tracking-widest text-primary font-bold mb-2">
-          Module {module.order} of {curriculum?.modules.length ?? 10}
+        <div className="flex items-baseline gap-3 mb-3">
+          <span className="text-5xl font-bold font-mono tabular-nums text-primary leading-none">
+            {String(module.order).padStart(2, "0")}
+          </span>
+          <span className="text-xs uppercase tracking-widest text-muted-foreground font-bold">
+            of {String(curriculum?.modules.length ?? 10).padStart(2, "0")}
+          </span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-3xl">{module.emoji}</span>
-          <h1 className="text-3xl font-bold tracking-tight">{module.title}</h1>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight">{module.title}</h1>
         <p className="text-muted-foreground mt-2">{module.subtitle}</p>
       </motion.header>
 
