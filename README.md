@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LOCKD In
 
-## Getting Started
+A daily discipline system for college students. Ten mindset modules, programmatic habit tracking, and campus community feeds in one app.
 
-First, run the development server:
+## Stack
+
+- Next.js 14+ (App Router) · TypeScript · Tailwind v4
+- Firebase Auth + Firestore + Storage + Remote Config
+- Framer Motion · TanStack Query · Zustand · shadcn-style primitives
+
+## Quick start
 
 ```bash
+npm install
+cp .env.local.example .env.local   # fill in your Firebase web app credentials
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Firebase setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Create a Firebase project at https://console.firebase.google.com.
+2. Add a web app and copy the config into `.env.local`.
+3. Enable **Authentication → Email/Password** and **Google** providers.
+4. Create a **Cloud Firestore** database in production mode.
+5. Deploy rules and indexes:
 
-## Learn More
+```bash
+npm install -g firebase-tools
+firebase login
+firebase use <your-project-id>
+firebase deploy --only firestore:rules,firestore:indexes
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Architecture
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- **Curriculum** lives in `public/curriculum/v1/modules.json` — static, cached, never touches Firestore. Updates via Remote Config in a future release.
+- **Per-user progress** lives at `users/{uid}/moduleProgress/{moduleId}`. Single real-time listener per active module.
+- **Goals** live at `users/{uid}/goals/{goalId}` and have an `isPublic` flag that mirrors check-ins to `/feed`.
+- **Denormalized summary fields** on `users/{uid}` (modulesCompleted, lockdInStatus, currentStreak) keep home-screen reads to a single document.
+- All list queries are paginated with `limit(20)`. `onSnapshot` is reserved for the user summary and the active module.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project structure
 
-## Deploy on Vercel
+```
+src/
+├── app/                      Next.js App Router
+│   ├── page.tsx              Landing + auth
+│   ├── onboarding/           First-time setup flow
+│   └── app/                  Authenticated shell
+│       ├── home/
+│       ├── mindset/
+│       ├── goals/
+│       ├── community/
+│       └── me/
+├── components/
+│   ├── providers.tsx         Auth + TanStack Query
+│   ├── ui/                   Button, Card, Input, ProgressRing, LockdInBadge, StreakFlame
+│   └── sections/             Section renderers (text, reflection, journal, link, quiz)
+├── lib/
+│   ├── firebase.ts
+│   ├── firestore/            Typed CRUD per collection
+│   ├── curriculum.ts
+│   ├── motion.ts             Shared Framer variants
+│   └── utils.ts
+├── types/
+public/curriculum/v1/modules.json
+firestore.rules
+firestore.indexes.json
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## What's in v1
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Auth (Google + .edu email) with onboarding
+- 10-module Mindset Hub with text, reflection, journal-streak, external-link, and quiz section types
+- LOCKD In status unlock at 10/10 with celebration
+- Goals CRUD, daily check-ins, public/private toggle, streaks
+- Community feed (public check-ins) + org browse and join
+
+## Roadmap
+
+- Org wall posts and reactions
+- Push notifications
+- Recruiter portal
+- Shareable LOCKD In certificate

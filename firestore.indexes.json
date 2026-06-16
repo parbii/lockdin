@@ -1,0 +1,37 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "feed",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "organizations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isApproved", "order": "ASCENDING" },
+        { "fieldPath": "university", "order": "ASCENDING" },
+        { "fieldPath": "memberCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "organizations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isApproved", "order": "ASCENDING" },
+        { "fieldPath": "memberCount", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "goals",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

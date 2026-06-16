@@ -1,0 +1,303 @@
+{
+  "version": "2026.06.1",
+  "modules": [
+    {
+      "id": "m01-kp-god-first",
+      "order": 1,
+      "title": "KP God First",
+      "subtitle": "Faith, peace, and mental centering",
+      "estimatedMinutes": 7,
+      "emoji": "🕊️",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Why we start here",
+          "body": "Before goals, before grades, before the grind — there is you. KP God First is about anchoring to something bigger than the next deadline. Whether your anchor is faith, family, a deeper sense of purpose, or simply your own values, you need one. Discipline without a center collapses under pressure. With a center, pressure becomes fuel.\n\nIn this module you'll name your anchor and commit to checking in with it daily. This is not religious instruction — it is mental architecture."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "Name your anchor",
+          "prompt": "What is the one thing — bigger than school, bigger than career — that you want to live in alignment with? Write it out. Be specific.",
+          "minChars": 120
+        },
+        {
+          "id": "s3",
+          "type": "journal_streak",
+          "title": "Daily centering practice",
+          "prompt": "Take 60 seconds today to sit with your anchor. Note one word for how you feel right now.",
+          "targetDays": 3
+        }
+      ]
+    },
+    {
+      "id": "m02-know-your-why",
+      "order": 2,
+      "title": "Know Your Why",
+      "subtitle": "Define the motivation behind the work",
+      "estimatedMinutes": 8,
+      "emoji": "🎯",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "The cost of working without a why",
+          "body": "Most students burn out not because the work is too hard but because they forgot why they signed up. Your why is the answer you give yourself at 2 a.m. when you'd rather quit. If it's borrowed from your parents, your friends, or a LinkedIn post — it won't hold.\n\nA real why is specific, personal, and a little embarrassing to say out loud. That's how you know it's yours."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "The five whys",
+          "prompt": "Write down what you're working toward right now. Then ask 'why?' five times in a row, each answer building on the last. The fifth answer is your real why.",
+          "minChars": 200
+        },
+        {
+          "id": "s3",
+          "type": "quiz",
+          "title": "Pressure test",
+          "passingScore": 0.66,
+          "questions": [
+            {
+              "id": "q1",
+              "prompt": "A strong personal 'why' is most useful when:",
+              "options": ["Things are easy", "You're motivated already", "You want to quit", "You're posting on social media"],
+              "correctIndex": 2
+            },
+            {
+              "id": "q2",
+              "prompt": "Which of these is a sign your 'why' is borrowed, not yours?",
+              "options": ["It scares you", "You can defend it to a stranger", "You learned it from a podcast yesterday", "You think about it daily"],
+              "correctIndex": 2
+            },
+            {
+              "id": "q3",
+              "prompt": "Why does the module recommend five 'whys' instead of one?",
+              "options": ["Tradition", "It surfaces the real motivation under surface answers", "More content is better", "To make it harder"],
+              "correctIndex": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "m03-ball-is-life",
+      "order": 3,
+      "title": "Ball Is Life",
+      "subtitle": "Accountability and teamwork lessons from the court",
+      "estimatedMinutes": 6,
+      "emoji": "🏀",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Box out, every play",
+          "body": "Basketball teaches the same lesson every possession: you are accountable for your assignment whether or not anyone is watching. Box out when the ball is across the court. Talk on defense even when you're tired. Show up to a workout your coach didn't schedule.\n\nIn life, no one is watching most of the time. That's where discipline is built — or quietly lost."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "Your assignment",
+          "prompt": "What is one 'assignment' in your life right now that no one is checking on, but that you know matters? How will you box out this week?",
+          "minChars": 150
+        }
+      ]
+    },
+    {
+      "id": "m04-art-of-what-if",
+      "order": 4,
+      "title": "The Art of What If",
+      "subtitle": "Vision and calculated creative risk",
+      "estimatedMinutes": 8,
+      "emoji": "💭",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Permission to imagine",
+          "body": "What if you actually pulled it off? What if the company you're afraid to start became real? What if you applied to the program you assumed you wouldn't get into?\n\n'What if' is the only sentence that can move you out of the version of your life that's already happening. The risk is not in asking it — the risk is in never asking it and finding out at 35 that you spent a decade defending a default."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "Three what-ifs",
+          "prompt": "Write three 'what if' statements about your life that you've never said out loud. They should feel slightly uncomfortable to type.",
+          "minChars": 180
+        },
+        {
+          "id": "s3",
+          "type": "journal_streak",
+          "title": "One bold move daily",
+          "prompt": "Each day, name one small action that moves you toward a 'what if'. Send the email. Make the ask. Open the doc.",
+          "targetDays": 5
+        }
+      ]
+    },
+    {
+      "id": "m05-linkedin",
+      "order": 5,
+      "title": "LinkedIn",
+      "subtitle": "Professional branding and networking that actually compounds",
+      "estimatedMinutes": 9,
+      "emoji": "💼",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Your profile is a search result",
+          "body": "Recruiters search for you before they meet you. Your profile is not a resume — it's a search result. The headline matters more than the work experience. The photo matters more than the headline. And consistency over four years matters more than any single post.\n\nThis module ends with you making one real change to your profile today."
+        },
+        {
+          "id": "s2",
+          "type": "text",
+          "title": "The three-line headline",
+          "body": "A great student headline does three things in under 220 characters: (1) names what you are, (2) names what you're building toward, (3) gives one specific signal. Example: 'CS @ Howard | Building consumer apps with real users | Prev: SWE intern @ Capital One'. Specific beats clever every time."
+        },
+        {
+          "id": "s3",
+          "type": "external_link",
+          "title": "Update your headline now",
+          "url": "https://www.linkedin.com/in/me/edit/intro/",
+          "ctaLabel": "Open LinkedIn",
+          "body": "Open your LinkedIn profile and rewrite your headline in the three-line format. Come back and confirm when done."
+        }
+      ]
+    },
+    {
+      "id": "m06-consistency",
+      "order": 6,
+      "title": "Consistency and Discipline",
+      "subtitle": "The framework of daily habits",
+      "estimatedMinutes": 7,
+      "emoji": "⚡",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Streaks > sprints",
+          "body": "Discipline is not a personality trait — it is a default. The job is to lower the activation energy of the things you want to do daily and raise it for the things you don't.\n\nThe goals you create in LOCKD In are the lab. Make them small enough that you can't honestly skip. A mile a day. Ten pages. One application. The compound interest is real."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "Pick your one",
+          "prompt": "What is ONE habit you will commit to every day for the next 30 days? Write it as a goal you can check off in this app.",
+          "minChars": 80
+        }
+      ]
+    },
+    {
+      "id": "m07-authenticity",
+      "order": 7,
+      "title": "Authenticity",
+      "subtitle": "Leading with your real self",
+      "estimatedMinutes": 6,
+      "emoji": "🪞",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "The cost of the mask",
+          "body": "Performing a version of yourself you think people want is exhausting and, eventually, illegible. People connect with specificity, not polish. The story of where you're actually from, what you actually love, what you've actually struggled with — that is your edge.\n\nIn a feed full of curated wins, the realest profile wins."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "What you usually edit out",
+          "prompt": "What is one true thing about your story that you usually edit out when you introduce yourself? Why?",
+          "minChars": 150
+        }
+      ]
+    },
+    {
+      "id": "m08-togetherness",
+      "order": 8,
+      "title": "Togetherness",
+      "subtitle": "Leveraging your community",
+      "estimatedMinutes": 7,
+      "emoji": "🤝",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Discipline is a team sport",
+          "body": "The lone wolf myth is a marketing campaign. Every person you admire has a group chat. They have people they show their work to before it's ready, people who notice when they go quiet, people who hold the line on standards when motivation drops.\n\nJoin one org in LOCKD In this week. Make your goals public to that group. Discipline you outsource to a community is discipline that survives."
+        },
+        {
+          "id": "s2",
+          "type": "external_link",
+          "title": "Join a community",
+          "url": "/app/community/orgs",
+          "ctaLabel": "Browse orgs",
+          "body": "Browse student orgs and join at least one. Make at least one of your goals public so the community can see your check-ins."
+        }
+      ]
+    },
+    {
+      "id": "m09-perfection",
+      "order": 9,
+      "title": "Perfection",
+      "subtitle": "Striving for execution excellence",
+      "estimatedMinutes": 6,
+      "emoji": "💎",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "Standards, not perfectionism",
+          "body": "Perfectionism is the enemy of shipping. High standards are the enemy of mediocrity. The difference: perfectionism is about avoiding the judgment of others; high standards are about respecting the people your work is for.\n\nShip the project. Then make the next one better. That is the loop."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "The one detail",
+          "prompt": "What is one detail in your current work — a project, an application, a profile — that you've been letting slide that is below your real standard? Fix it today.",
+          "minChars": 120
+        }
+      ]
+    },
+    {
+      "id": "m10-purpose",
+      "order": 10,
+      "title": "What's Your Purpose",
+      "subtitle": "Defining your long-term mission",
+      "estimatedMinutes": 10,
+      "emoji": "🔥",
+      "sections": [
+        {
+          "id": "s1",
+          "type": "text",
+          "title": "From why to what",
+          "body": "Your 'why' is your motivation. Your purpose is the shape your life takes because of it. A purpose statement is one sentence you can recite that tells you, for the next ten years, what to say yes to and what to say no to.\n\nThis is the last module. After you finish it, you are LOCKD In."
+        },
+        {
+          "id": "s2",
+          "type": "reflection",
+          "title": "Your one-sentence purpose",
+          "prompt": "Draft a single sentence: 'My purpose is to ___ so that ___.' Don't worry about getting it perfect — you'll edit it for years. Just write the first real version.",
+          "minChars": 60
+        },
+        {
+          "id": "s3",
+          "type": "quiz",
+          "title": "Final check",
+          "passingScore": 1,
+          "questions": [
+            {
+              "id": "q1",
+              "prompt": "What is the difference between a 'why' and a 'purpose' in this curriculum?",
+              "options": ["They're the same", "Why is motivation; purpose is the shape it gives your life", "Purpose is shorter", "Why is for school; purpose is for work"],
+              "correctIndex": 1
+            },
+            {
+              "id": "q2",
+              "prompt": "What are you supposed to do with your purpose statement after writing it?",
+              "options": ["Post it publicly", "Frame it", "Use it to decide what to say yes and no to", "Memorize it word-for-word"],
+              "correctIndex": 2
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
