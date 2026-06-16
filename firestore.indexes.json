@@ -1,13 +1,6 @@
 {
   "indexes": [
     {
-      "collectionGroup": "feed",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "createdAt", "order": "DESCENDING" }
-      ]
-    },
-    {
       "collectionGroup": "organizations",
       "queryScope": "COLLECTION",
       "fields": [
