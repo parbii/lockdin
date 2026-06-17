@@ -11,12 +11,21 @@ import {
   writeBatch,
   serverTimestamp,
   addDoc,
+  runTransaction,
 } from "firebase/firestore";
 import { getDb } from "@/lib/firebase";
 import { userDoc } from "./users";
-import type { Goal } from "@/types";
+import type { Goal, Habit } from "@/types";
 import { todayKey } from "@/lib/utils";
-import { computeTotalReps, LOCK_IN_THRESHOLD, repsOnDay } from "@/lib/goals-math";
+import {
+  computeTotalReps,
+  LOCK_IN_THRESHOLD,
+  repsOnDay,
+  isHabitLockedIn,
+  isGoalLockedIn,
+  normalizeGoal,
+  makeHabitId,
+} from "@/lib/goals-math";
 
 function goalsCol(uid: string) {
   return collection(getDb(), "users", uid, "goals");
@@ -30,24 +39,44 @@ export async function listActiveGoals(uid: string): Promise<Goal[]> {
     limit(20),
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<Goal, "id">) }));
+  return snap.docs.map((d) =>
+    normalizeGoal({ id: d.id, ...(d.data() as Omit<Goal, "id">) }),
+  );
+}
+
+export interface NewHabitInput {
+  title: string;
+  metric: string;
+  dailyFrequency: number;
 }
 
 export async function createGoal(
   uid: string,
-  data: { title: string; description?: string; habitMetric: string; isPublic: boolean; dailyFrequency: number },
+  data: {
+    title: string;
+    description?: string;
+    isPublic: boolean;
+    habits: NewHabitInput[];
+  },
 ): Promise<string> {
   const ref = doc(goalsCol(uid));
+  const habits: Habit[] = (data.habits.length > 0 ? data.habits : [
+    { title: data.title, metric: "", dailyFrequency: 1 },
+  ]).map((h) => ({
+    id: makeHabitId(),
+    title: h.title,
+    metric: h.metric,
+    dailyFrequency: Math.max(1, Math.floor(h.dailyFrequency || 1)),
+    progressHistory: {},
+  }));
   const goal: Omit<Goal, "id"> = {
     userId: uid,
     title: data.title,
     description: data.description,
-    habitMetric: data.habitMetric,
-    dailyFrequency: Math.max(1, Math.floor(data.dailyFrequency || 1)),
     isPublic: data.isPublic,
     status: "active",
     createdAt: Date.now(),
-    progressHistory: {},
+    habits,
   };
   const batch = writeBatch(getDb());
   batch.set(ref, goal);
@@ -60,62 +89,103 @@ export async function createGoal(
   return ref.id;
 }
 
-export interface CheckInResult {
-  reps: number;
-  totalReps: number;
-  justLockedIn: boolean;
+export interface HabitCheckInResult {
+  habitJustLocked: boolean;
+  goalJustLocked: boolean;
   atDailyMax: boolean;
+  newReps: number;
 }
 
-export async function checkInGoal(
+interface TxResult {
+  outcome: HabitCheckInResult;
+  feedPost: { type: "check_in" | "milestone"; body: string } | null;
+}
+
+export async function checkInHabit(
   uid: string,
-  goal: Goal,
+  goalId: string,
+  habitId: string,
   userName: string,
-): Promise<CheckInResult | null> {
+): Promise<HabitCheckInResult | null> {
+  const goalRef = doc(getDb(), "users", uid, "goals", goalId);
   const day = todayKey();
-  const freq = Math.max(1, goal.dailyFrequency || 1);
-  const todayCount = repsOnDay(goal.progressHistory, day);
-  if (todayCount >= freq) return null;
 
-  const newTodayCount = todayCount + 1;
-  const prevTotal = computeTotalReps(goal.progressHistory);
-  const newTotal = prevTotal + 1;
-  const justLockedIn = !goal.lockedInAt && newTotal >= LOCK_IN_THRESHOLD;
+  const txResult = await runTransaction<TxResult | null>(getDb(), async (tx) => {
+    const snap = await tx.get(goalRef);
+    if (!snap.exists()) return null;
+    const goal = normalizeGoal({ id: snap.id, ...(snap.data() as Omit<Goal, "id">) });
+    const habitIdx = goal.habits.findIndex((h) => h.id === habitId);
+    if (habitIdx < 0) return null;
+    const habit = goal.habits[habitIdx];
+    const todayReps = repsOnDay(habit.progressHistory, day);
+    const freq = Math.max(1, habit.dailyFrequency || 1);
+    if (todayReps >= freq) {
+      return {
+        outcome: { habitJustLocked: false, goalJustLocked: false, atDailyMax: true, newReps: todayReps },
+        feedPost: null,
+      };
+    }
 
-  const goalRef = doc(getDb(), "users", uid, "goals", goal.id);
-  const batch = writeBatch(getDb());
-  const patch: Record<string, unknown> = {
-    progressHistory: { [day]: newTodayCount },
-  };
-  if (justLockedIn) patch.lockedInAt = Date.now();
-  batch.set(goalRef, patch, { merge: true });
-  batch.set(
-    userDoc(uid),
-    { lastCheckInDate: day, updatedAt: serverTimestamp() },
-    { merge: true },
-  );
-  await batch.commit();
+    const newReps = todayReps + 1;
+    const newHistory = { ...habit.progressHistory, [day]: newReps };
+    const newTotal = computeTotalReps(newHistory);
+    const habitWasLocked = isHabitLockedIn(habit);
+    const habitNowLocked = newTotal >= LOCK_IN_THRESHOLD;
+    const habitJustLocked = !habitWasLocked && habitNowLocked;
 
-  if (goal.isPublic) {
+    const updatedHabit: Habit = {
+      ...habit,
+      progressHistory: newHistory,
+      lockedInAt: habit.lockedInAt ?? (habitJustLocked ? Date.now() : undefined),
+    };
+    const updatedHabits = [...goal.habits];
+    updatedHabits[habitIdx] = updatedHabit;
+
+    const goalWasLocked = isGoalLockedIn(goal);
+    const newGoal = { ...goal, habits: updatedHabits };
+    const goalNowLocked = isGoalLockedIn(newGoal);
+    const goalJustLocked = !goalWasLocked && goalNowLocked;
+
+    const patch: Record<string, unknown> = { habits: updatedHabits };
+    if (goalJustLocked) patch.lockedInAt = Date.now();
+    tx.set(goalRef, patch, { merge: true });
+    tx.set(
+      userDoc(uid),
+      { lastCheckInDate: day, updatedAt: serverTimestamp() },
+      { merge: true },
+    );
+
+    let feedPost: TxResult["feedPost"] = null;
+    if (goal.isPublic) {
+      if (goalJustLocked) {
+        feedPost = { type: "milestone", body: `🔒 LOCKD In on "${goal.title}" — every habit at 15 reps.` };
+      } else if (habitJustLocked) {
+        feedPost = { type: "milestone", body: `🔒 LOCKD In on "${habit.title}" toward "${goal.title}" — 15 reps deep.` };
+      } else {
+        feedPost = { type: "check_in", body: `Rep ${newTotal} on "${habit.title}" toward "${goal.title}"` };
+      }
+    }
+
+    return {
+      outcome: { habitJustLocked, goalJustLocked, atDailyMax: newReps >= freq, newReps },
+      feedPost,
+    };
+  });
+
+  if (txResult?.feedPost) {
     await addDoc(collection(getDb(), "feed"), {
-      type: justLockedIn ? "milestone" : "check_in",
+      type: txResult.feedPost.type,
       userId: uid,
       userName,
-      goalId: goal.id,
-      body: justLockedIn
-        ? `🔒 LOCKD In on "${goal.title}" — ${LOCK_IN_THRESHOLD} reps deep.`
-        : `Checked in on "${goal.title}" — rep ${newTotal} of ${LOCK_IN_THRESHOLD}`,
+      goalId,
+      habitId,
+      body: txResult.feedPost.body,
       createdAt: Date.now(),
       reactions: {},
     });
   }
 
-  return {
-    reps: newTodayCount,
-    totalReps: newTotal,
-    justLockedIn,
-    atDailyMax: newTodayCount >= freq,
-  };
+  return txResult?.outcome ?? null;
 }
 
 export async function archiveGoal(uid: string, goalId: string) {

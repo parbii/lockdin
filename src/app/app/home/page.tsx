@@ -13,12 +13,12 @@ import { Button } from "@/components/ui/button";
 import { ProgressRing } from "@/components/ui/progress-ring";
 import { StreakFlame } from "@/components/ui/streak-flame";
 import { LockdInBadge } from "@/components/ui/lockd-in-badge";
-import { listActiveGoals, checkInGoal } from "@/lib/firestore/goals";
+import { listActiveGoals, checkInHabit } from "@/lib/firestore/goals";
 import { fadeUp, stagger } from "@/lib/motion";
 import { todayKey } from "@/lib/utils";
-import { computeTotalReps, repsOnDay, LOCK_IN_THRESHOLD } from "@/lib/goals-math";
+import { computeTotalReps, repsOnDay, LOCK_IN_THRESHOLD, isHabitLockedIn, isGoalLockedIn } from "@/lib/goals-math";
 import { LockInBar } from "@/components/ui/lock-in-bar";
-import type { Goal, ModuleProgress } from "@/types";
+import type { Goal, Habit, ModuleProgress } from "@/types";
 
 export default function HomePage() {
   const { user, profile } = useAuth();
@@ -52,11 +52,14 @@ export default function HomePage() {
   const total = curriculum?.modules.length ?? 10;
   const nextModule = curriculum?.modules.find((m) => progressMap[m.id]?.status !== "completed");
   const today = todayKey();
-  const goalsDoneToday = (goals ?? []).filter((g) => {
-    const reps = repsOnDay(g.progressHistory, today);
-    return reps >= (g.dailyFrequency || 1);
+  const allHabits: Array<{ goal: Goal; habit: Habit }> = (goals ?? []).flatMap((g) =>
+    g.habits.map((h) => ({ goal: g, habit: h })),
+  );
+  const habitsDoneToday = allHabits.filter(({ habit }) => {
+    const reps = repsOnDay(habit.progressHistory, today);
+    return reps >= (habit.dailyFrequency || 1);
   }).length;
-  const goalsLockedIn = (goals ?? []).filter((g) => computeTotalReps(g.progressHistory) >= LOCK_IN_THRESHOLD).length;
+  const goalsLockedIn = (goals ?? []).filter(isGoalLockedIn).length;
 
   return (
     <motion.div
@@ -120,10 +123,10 @@ export default function HomePage() {
               <Flame className="h-7 w-7 text-primary" />
             </div>
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Goals</div>
-              <div className="font-bold">{goalsDoneToday}/{goals?.length ?? 0} done today</div>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Habits</div>
+              <div className="font-bold">{habitsDoneToday}/{allHabits.length} done today</div>
               <Link href="/app/goals" className="text-xs text-primary mt-1 inline-block">
-                {goalsLockedIn > 0 ? `${goalsLockedIn} LOCKD In →` : "View goals →"}
+                {goalsLockedIn > 0 ? `${goalsLockedIn} goal${goalsLockedIn === 1 ? "" : "s"} LOCKD In →` : "View goals →"}
               </Link>
             </div>
           </div>
@@ -135,10 +138,10 @@ export default function HomePage() {
           <h2 className="font-bold">Today's habits</h2>
           <Link href="/app/goals" className="text-xs text-muted-foreground hover:text-foreground">All goals →</Link>
         </div>
-        {!goals || goals.length === 0 ? (
+        {allHabits.length === 0 ? (
           <Card>
             <div className="text-center py-6">
-              <p className="text-sm text-muted-foreground mb-4">No active goals yet.</p>
+              <p className="text-sm text-muted-foreground mb-4">No active habits yet.</p>
               <Link href="/app/goals">
                 <Button>Create your first goal</Button>
               </Link>
@@ -146,8 +149,14 @@ export default function HomePage() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {goals.slice(0, 4).map((g) => (
-              <HabitRow key={g.id} goal={g} userName={profile?.name || "Student"} onChecked={refetchGoals} />
+            {allHabits.slice(0, 5).map(({ goal, habit }) => (
+              <HabitRow
+                key={`${goal.id}-${habit.id}`}
+                goal={goal}
+                habit={habit}
+                userName={profile?.name || "Student"}
+                onChecked={refetchGoals}
+              />
             ))}
           </div>
         )}
@@ -158,20 +167,22 @@ export default function HomePage() {
 
 function HabitRow({
   goal,
+  habit,
   userName,
   onChecked,
 }: {
   goal: Goal;
+  habit: Habit;
   userName: string;
   onChecked: () => void;
 }) {
   const { user } = useAuth();
   const today = todayKey();
-  const todayReps = repsOnDay(goal.progressHistory, today);
-  const totalReps = computeTotalReps(goal.progressHistory);
-  const freq = goal.dailyFrequency || 1;
+  const todayReps = repsOnDay(habit.progressHistory, today);
+  const totalReps = computeTotalReps(habit.progressHistory);
+  const freq = Math.max(1, habit.dailyFrequency || 1);
   const atDailyMax = todayReps >= freq;
-  const lockedIn = totalReps >= LOCK_IN_THRESHOLD;
+  const habitLocked = isHabitLockedIn(habit);
   const [busy, setBusy] = useState(false);
 
   return (
@@ -187,19 +198,19 @@ function HabitRow({
             if (!user) return;
             setBusy(true);
             try {
-              await checkInGoal(user.uid, goal, userName);
+              await checkInHabit(user.uid, goal.id, habit.id, userName);
               onChecked();
             } finally {
               setBusy(false);
             }
           }}
           className={`h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
-            atDailyMax ? "bg-primary border-primary" : "border-border hover:border-primary"
-          }`}
+            atDailyMax ? "bg-primary border-primary text-primary-foreground" : "border-border hover:border-primary text-foreground"
+          } disabled:opacity-60 disabled:cursor-not-allowed`}
           aria-label={atDailyMax ? "Daily max hit" : "Add a rep"}
         >
           {atDailyMax ? (
-            <svg className="h-4 w-4 text-primary-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
               <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           ) : (
@@ -208,15 +219,15 @@ function HabitRow({
         </button>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <div className="font-semibold text-sm truncate">{goal.title}</div>
-            {lockedIn && (
+            <div className="font-semibold text-sm truncate">{habit.title}</div>
+            {habitLocked && (
               <span className="text-[10px] uppercase tracking-wider text-primary font-bold">LOCKD In</span>
             )}
-            {goal.isPublic && !lockedIn && (
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Public</span>
-            )}
           </div>
-          <div className="text-xs text-muted-foreground">{goal.habitMetric}</div>
+          <div className="text-xs text-muted-foreground truncate">
+            <span className="opacity-70">{goal.title}</span>
+            {habit.metric && <span> · {habit.metric}</span>}
+          </div>
         </div>
         <div className="text-right flex-shrink-0">
           <div className="text-sm font-bold tabular-nums">

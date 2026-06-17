@@ -117,18 +117,28 @@ export interface ModuleProgress {
   completedAt?: number;
 }
 
+export interface Habit {
+  id: string;
+  title: string;
+  metric: string;
+  dailyFrequency: number;
+  progressHistory: Record<string, number | boolean>;
+  lockedInAt?: number;
+}
+
 export interface Goal {
   id: string;
   userId: string;
   title: string;
   description?: string;
-  habitMetric: string;
-  dailyFrequency: number;
   isPublic: boolean;
   status: "active" | "archived";
   createdAt: number;
-  progressHistory: Record<string, number | boolean>;
+  habits: Habit[];
   lockedInAt?: number;
+  habitMetric?: string;
+  dailyFrequency?: number;
+  progressHistory?: Record<string, number | boolean>;
 }
 
 export interface FeedPost {
