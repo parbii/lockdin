@@ -1,33 +1,33 @@
 {
-  "version": "2026.06.1",
+  "version": "2026.06.2",
   "modules": [
     {
       "id": "m01-kp-god-first",
       "order": 1,
-      "title": "KP God First",
-      "subtitle": "Faith, peace, and mental centering",
+      "title": "Faith First",
+      "subtitle": "Anchor to something bigger than the grind",
       "estimatedMinutes": 7,
-      "emoji": "🕊️",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
           "title": "Why we start here",
-          "body": "Before goals, before grades, before the grind — there is you. KP God First is about anchoring to something bigger than the next deadline. Whether your anchor is faith, family, a deeper sense of purpose, or simply your own values, you need one. Discipline without a center collapses under pressure. With a center, pressure becomes fuel.\n\nIn this module you'll name your anchor and commit to checking in with it daily. This is not religious instruction — it is mental architecture."
+          "body": "Before goals, before grades, before the grind — there is you, and there is what you believe in.\n\nFaith doesn't have to mean religion. Your anchor can be a higher power, your culture, your family, the people you carry, a mission, or your own deepest values. What matters is that it exists. Discipline without a center collapses under pressure. With a center, pressure becomes fuel.\n\nThis module is about naming your anchor and committing to checking in with it. We start here because everything else in this app — every module, every habit — pulls from this well."
         },
         {
           "id": "s2",
           "type": "reflection",
           "title": "Name your anchor",
-          "prompt": "What is the one thing — bigger than school, bigger than career — that you want to live in alignment with? Write it out. Be specific.",
+          "prompt": "What is the one thing — bigger than school, bigger than career — that you want to live in alignment with? It can be God, your faith tradition, your people, a personal mission, or the kind of human you want to be. Just name it. Be specific.",
           "minChars": 120
         },
         {
           "id": "s3",
-          "type": "journal_streak",
-          "title": "Daily centering practice",
-          "prompt": "Take 60 seconds today to sit with your anchor. Note one word for how you feel right now.",
-          "targetDays": 3
+          "type": "reflection",
+          "title": "How will you check in",
+          "prompt": "How will you check in with your anchor day to day? Prayer, journaling, meditation, a phone call home, a verse, a quote, a moment of silence — what works for you?",
+          "minChars": 80
         }
       ]
     },
@@ -37,7 +37,7 @@
       "title": "Know Your Why",
       "subtitle": "Define the motivation behind the work",
       "estimatedMinutes": 8,
-      "emoji": "🎯",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
@@ -84,21 +84,21 @@
       "id": "m03-ball-is-life",
       "order": 3,
       "title": "Ball Is Life",
-      "subtitle": "Accountability and teamwork lessons from the court",
-      "estimatedMinutes": 6,
-      "emoji": "🏀",
+      "subtitle": "Every sport teaches the same lesson",
+      "estimatedMinutes": 7,
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
-          "title": "Box out, every play",
-          "body": "Basketball teaches the same lesson every possession: you are accountable for your assignment whether or not anyone is watching. Box out when the ball is across the court. Talk on defense even when you're tired. Show up to a workout your coach didn't schedule.\n\nIn life, no one is watching most of the time. That's where discipline is built — or quietly lost."
+          "title": "Life is a game — play it that way",
+          "body": "Whether your sport was basketball, football, soccer, track, swimming, dance, esports, or none — every sport teaches the same lesson. You are accountable for your assignment whether or not anyone is watching. You box out when the ball is across the court. You finish the rep when the coach turned around. You make the cut you're afraid to make.\n\nHere's the bigger frame: life is a temporary game. You have one body, one window, one limited number of possessions. Nobody plays forever. The people you admire treat life the way great athletes treat their sport — with respect, urgency, and craft. They study film on themselves. They practice when nobody's clapping. They show up for every play.\n\nThat is the lens. Treat your days like possessions. Treat your goals like reps."
         },
         {
           "id": "s2",
           "type": "reflection",
           "title": "Your assignment",
-          "prompt": "What is one 'assignment' in your life right now that no one is checking on, but that you know matters? How will you box out this week?",
+          "prompt": "What is one 'assignment' in your life right now that no one is checking on, but that you know matters? It could be a class, a project, a person, your health, your faith. Name it — and decide how you'll show up for it this week like a pro.",
           "minChars": 150
         }
       ]
@@ -107,29 +107,29 @@
       "id": "m04-art-of-what-if",
       "order": 4,
       "title": "The Art of What If",
-      "subtitle": "Vision and calculated creative risk",
+      "subtitle": "Calculated bets on yourself",
       "estimatedMinutes": 8,
-      "emoji": "💭",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
-          "title": "Permission to imagine",
-          "body": "What if you actually pulled it off? What if the company you're afraid to start became real? What if you applied to the program you assumed you wouldn't get into?\n\n'What if' is the only sentence that can move you out of the version of your life that's already happening. The risk is not in asking it — the risk is in never asking it and finding out at 35 that you spent a decade defending a default."
+          "title": "What if isn't a feeling — it's a model",
+          "body": "Most people treat 'what if' as anxiety. Smart people use it as a risk model.\n\nHere's the question: if the worst outcome of doing this thing isn't worse than the default of doing nothing, you go. Because the upside is asymmetric — your downside is capped at 'where you already are,' and your upside is uncapped.\n\nApplied to college life: what if you send the cold email? Worst case, they don't reply. That's the same as not sending it. What if you apply to the program everyone says you won't get into? Worst case, you don't get in. That's the same as not applying. What if you start the thing? Worst case, it doesn't work. That's the same as not starting.\n\nBut what if it works? What if it exceeds your expectations? That asymmetry is the entire game."
         },
         {
           "id": "s2",
           "type": "reflection",
-          "title": "Three what-ifs",
-          "prompt": "Write three 'what if' statements about your life that you've never said out loud. They should feel slightly uncomfortable to type.",
-          "minChars": 180
+          "title": "Run the model",
+          "prompt": "Pick one thing you've been hesitating on. Write: (1) What if it goes badly — what's the realistic worst case? (2) Is that actually worse than not doing it at all? (3) What if it exceeds your expectations — what does that look like?",
+          "minChars": 200
         },
         {
           "id": "s3",
-          "type": "journal_streak",
-          "title": "One bold move daily",
-          "prompt": "Each day, name one small action that moves you toward a 'what if'. Send the email. Make the ask. Open the doc.",
-          "targetDays": 5
+          "type": "reflection",
+          "title": "Three what-ifs",
+          "prompt": "Write three 'what if' statements about your life that you've never said out loud. They should feel slightly uncomfortable to type.",
+          "minChars": 150
         }
       ]
     },
@@ -137,21 +137,21 @@
       "id": "m05-linkedin",
       "order": 5,
       "title": "LinkedIn",
-      "subtitle": "Professional branding and networking that actually compounds",
+      "subtitle": "Build your professional presence as a student",
       "estimatedMinutes": 9,
-      "emoji": "💼",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
-          "title": "Your profile is a search result",
-          "body": "Recruiters search for you before they meet you. Your profile is not a resume — it's a search result. The headline matters more than the work experience. The photo matters more than the headline. And consistency over four years matters more than any single post.\n\nThis module ends with you making one real change to your profile today."
+          "title": "Presence is a career multiplier",
+          "body": "If you are a student trying to start a serious career — internships, full-time roles, research, your own company — your professional presence is doing work for you 24/7, whether you're paying attention to it or not.\n\nRecruiters search for you before they meet you. Alumni decide whether to reply to your DM based on what they see. The difference between an opportunity and a dead end is sometimes just whether your profile looks like someone worth backing.\n\nThis isn't vanity. This is leverage. A strong presence opens doors that grades and resumes alone won't open. LinkedIn is the cheapest, fastest tool for building one — but you have to actually use it like a tool, not a social network."
         },
         {
           "id": "s2",
           "type": "text",
           "title": "The three-line headline",
-          "body": "A great student headline does three things in under 220 characters: (1) names what you are, (2) names what you're building toward, (3) gives one specific signal. Example: 'CS @ Howard | Building consumer apps with real users | Prev: SWE intern @ Capital One'. Specific beats clever every time."
+          "body": "A great student headline does three things in under 220 characters: (1) names what you are, (2) names what you're building toward, (3) gives one specific signal that proves you're serious.\n\nExample: 'CS @ Howard | Building consumer apps with real users | Prev: SWE intern @ Capital One'.\n\nSpecific beats clever every time. 'Aspiring' is the most expensive word on the platform — drop it. You either are or you're working on it. Both are stronger than aspiring."
         },
         {
           "id": "s3",
@@ -167,21 +167,21 @@
       "id": "m06-consistency",
       "order": 6,
       "title": "Consistency and Discipline",
-      "subtitle": "The framework of daily habits",
+      "subtitle": "Show up for yourself first",
       "estimatedMinutes": 7,
-      "emoji": "⚡",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
-          "title": "Streaks > sprints",
-          "body": "Discipline is not a personality trait — it is a default. The job is to lower the activation energy of the things you want to do daily and raise it for the things you don't.\n\nThe goals you create in LOCKD In are the lab. Make them small enough that you can't honestly skip. A mile a day. Ten pages. One application. The compound interest is real."
+          "title": "The only ones who show up every day",
+          "body": "Friends will come and go. Teammates graduate. Family gets busy. The internet's attention is rented. The only person who will be there for you every day of your life is you — and whatever you anchored to in module one.\n\nDiscipline is what that relationship looks like in practice. It is the rep you do for yourself when nobody's clapping. The class you read for even though attendance isn't taken. The workout you finish because you told yourself you would.\n\nThis is the truth nobody wants to hear: motivation is a guest. Discipline is the resident. You're not training to feel like doing the thing. You're training to do the thing whether you feel like it or not."
         },
         {
           "id": "s2",
           "type": "reflection",
           "title": "Pick your one",
-          "prompt": "What is ONE habit you will commit to every day for the next 30 days? Write it as a goal you can check off in this app.",
+          "prompt": "What is ONE habit you will commit to every day for the next 30 days? Write it as a goal you can check off in this app. Make it small enough that skipping feels worse than doing.",
           "minChars": 80
         }
       ]
@@ -192,7 +192,7 @@
       "title": "Authenticity",
       "subtitle": "Leading with your real self",
       "estimatedMinutes": 6,
-      "emoji": "🪞",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
@@ -215,21 +215,21 @@
       "title": "Togetherness",
       "subtitle": "Leveraging your community",
       "estimatedMinutes": 7,
-      "emoji": "🤝",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
           "title": "Discipline is a team sport",
-          "body": "The lone wolf myth is a marketing campaign. Every person you admire has a group chat. They have people they show their work to before it's ready, people who notice when they go quiet, people who hold the line on standards when motivation drops.\n\nJoin one org in LOCKD In this week. Make your goals public to that group. Discipline you outsource to a community is discipline that survives."
+          "body": "The lone wolf myth is a marketing campaign. Every person you admire has a group chat. They have people they show their work to before it's ready, people who notice when they go quiet, people who hold the line on standards when motivation drops.\n\nJoin one community in LOCKD In this week. Make your goals public to that group. Discipline you outsource to a community is discipline that survives."
         },
         {
           "id": "s2",
           "type": "external_link",
           "title": "Join a community",
           "url": "/app/community/orgs",
-          "ctaLabel": "Browse orgs",
-          "body": "Browse student orgs and join at least one. Make at least one of your goals public so the community can see your check-ins."
+          "ctaLabel": "Browse communities",
+          "body": "Browse student communities and join at least one. Make at least one of your goals public so the community can see your check-ins."
         }
       ]
     },
@@ -237,21 +237,21 @@
       "id": "m09-perfection",
       "order": 9,
       "title": "Perfection",
-      "subtitle": "Striving for execution excellence",
+      "subtitle": "1% better every day",
       "estimatedMinutes": 6,
-      "emoji": "💎",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",
           "type": "text",
-          "title": "Standards, not perfectionism",
-          "body": "Perfectionism is the enemy of shipping. High standards are the enemy of mediocrity. The difference: perfectionism is about avoiding the judgment of others; high standards are about respecting the people your work is for.\n\nShip the project. Then make the next one better. That is the loop."
+          "title": "Perfection is a direction, not a destination",
+          "body": "If you treat perfection as a place you arrive at, you'll never arrive. If you treat it as a direction you point yourself in every day, it becomes the most powerful compounding force in your life.\n\nThe math is wild. 1% better every day for a year is roughly 37x. Not 37% — 37 times. You will not feel the difference on day 12. You will not feel it on day 50. You will feel it on day 200 when you look back at the person who started.\n\nThis isn't perfectionism. Perfectionism freezes you because you're scared of the judgment of others. The 1% rule is the opposite — you ship, you note what was below your standard, and you raise it tomorrow. The standard moves, and you move with it."
         },
         {
           "id": "s2",
           "type": "reflection",
-          "title": "The one detail",
-          "prompt": "What is one detail in your current work — a project, an application, a profile — that you've been letting slide that is below your real standard? Fix it today.",
+          "title": "The 1% you'll add today",
+          "prompt": "What is one small thing in your current work — a project, an application, a profile, a habit — that you can make 1% better today? Not perfect. Just better.",
           "minChars": 120
         }
       ]
@@ -262,7 +262,7 @@
       "title": "What's Your Purpose",
       "subtitle": "Defining your long-term mission",
       "estimatedMinutes": 10,
-      "emoji": "🔥",
+      "emoji": "",
       "sections": [
         {
           "id": "s1",

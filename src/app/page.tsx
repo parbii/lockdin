@@ -65,7 +65,7 @@ export default function LandingPage() {
         <motion.div variants={fadeUp} className="mt-10 grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-xl">
           <Feature icon={<Sparkles className="h-5 w-5" />} title="10 modules" body="5–10 min each. Finish all 10 to be LOCKD In." />
           <Feature icon={<Target className="h-5 w-5" />} title="Habit tracker" body="Public or private. Daily check-ins build streaks." />
-          <Feature icon={<Users className="h-5 w-5" />} title="Campus orgs" body="Show up for each other. Discipline as a team sport." />
+          <Feature icon={<Users className="h-5 w-5" />} title="Campus communities" body="Show up for each other. Discipline as a team sport." />
         </motion.div>
       </motion.section>
 

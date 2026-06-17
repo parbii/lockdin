@@ -96,7 +96,7 @@ export default function OnboardingPage() {
             )}
             {step === "major" && (
               <>
-                <Heading title="What's your major?" sub="We'll use this to surface relevant orgs and opportunities." />
+                <Heading title="What's your major?" sub="We'll use this to surface relevant communities and opportunities." />
                 <Input placeholder="e.g. Computer Science" value={major} onChange={(e) => setMajor(e.target.value)} />
               </>
             )}

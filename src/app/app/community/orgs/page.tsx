@@ -40,7 +40,7 @@ export default function OrgsPage() {
         </div>
         <div className="flex gap-2 text-xs">
           <Link href="/app/community/feed" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground">Feed</Link>
-          <Link href="/app/community/orgs" className="px-3 py-1.5 rounded-full bg-secondary font-semibold">Orgs</Link>
+          <Link href="/app/community/orgs" className="px-3 py-1.5 rounded-full bg-secondary font-semibold">Communities</Link>
         </div>
       </motion.header>
 
@@ -65,8 +65,8 @@ export default function OrgsPage() {
         <Empty title="Friends coming soon" body="Invite-only campus connections." />
       ) : !list || list.length === 0 ? (
         <Empty
-          title={tab === "mine" ? "You haven't joined any orgs" : "No orgs yet for your campus"}
-          body={tab === "mine" ? "Go to Discover to find one." : "Check back as orgs onboard."}
+          title={tab === "mine" ? "You haven't joined any communities" : "No communities yet for your campus"}
+          body={tab === "mine" ? "Go to Discover to find one." : "Check back as communities onboard."}
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">

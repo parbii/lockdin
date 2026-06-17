@@ -35,7 +35,7 @@ export default function FeedPage() {
           </div>
           <div className="flex gap-2 text-xs">
             <Link href="/app/community/feed" className="px-3 py-1.5 rounded-full bg-secondary font-semibold">Feed</Link>
-            <Link href="/app/community/orgs" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground">Orgs</Link>
+            <Link href="/app/community/orgs" className="px-3 py-1.5 rounded-full text-muted-foreground hover:text-foreground">Communities</Link>
           </div>
         </div>
       </motion.header>

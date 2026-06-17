@@ -30,7 +30,6 @@ export function SectionRenderer(props: SectionProps) {
 }
 
 function TextBlock({ section, onComplete }: SectionProps) {
-  if (section.type !== "text") return null;
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const el = ref.current;
@@ -47,6 +46,7 @@ function TextBlock({ section, onComplete }: SectionProps) {
     observer.observe(el);
     return () => observer.disconnect();
   }, [onComplete]);
+  if (section.type !== "text") return null;
 
   return (
     <article className="prose prose-invert max-w-none">
@@ -59,11 +59,12 @@ function TextBlock({ section, onComplete }: SectionProps) {
 }
 
 function Reflection({ section, progress, onReflectionSave, onComplete }: SectionProps) {
-  if (section.type !== "reflection") return null;
-  const initial = progress?.reflections?.[section.id] ?? "";
+  const isReflection = section.type === "reflection";
+  const initial = isReflection ? (progress?.reflections?.[section.id] ?? "") : "";
+  const minChars = isReflection ? section.minChars : 0;
   const [text, setText] = useState(initial);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const completed = text.length >= section.minChars;
+  const completed = text.length >= minChars;
 
   useEffect(() => {
     if (timer.current) clearTimeout(timer.current);
@@ -75,6 +76,8 @@ function Reflection({ section, progress, onReflectionSave, onComplete }: Section
       if (timer.current) clearTimeout(timer.current);
     };
   }, [text, completed, initial, onComplete, onReflectionSave]);
+
+  if (!isReflection) return null;
 
   return (
     <div>
@@ -99,16 +102,19 @@ function Reflection({ section, progress, onReflectionSave, onComplete }: Section
 }
 
 function JournalStreak({ section, progress, onJournalEntry, onComplete }: SectionProps) {
-  if (section.type !== "journal_streak") return null;
-  const streak = progress?.journalStreaks?.[section.id];
+  const isStreak = section.type === "journal_streak";
+  const streak = isStreak ? progress?.journalStreaks?.[section.id] : undefined;
   const today = todayKey();
   const canLogToday = !streak || streak.lastEntryDate !== today;
   const current = streak?.currentStreak ?? 0;
-  const completed = current >= section.targetDays;
+  const targetDays = isStreak ? section.targetDays : 0;
+  const completed = current >= targetDays;
 
   useEffect(() => {
     if (completed) onComplete();
   }, [completed, onComplete]);
+
+  if (!isStreak) return null;
 
   return (
     <div>
@@ -132,11 +138,11 @@ function JournalStreak({ section, progress, onJournalEntry, onComplete }: Sectio
 }
 
 function ExternalLinkSection({ section, progress, onAttestExternal, onComplete }: SectionProps) {
-  if (section.type !== "external_link") return null;
   const confirmed = !!progress?.externalLinkAttestations?.[section.id]?.confirmed;
   useEffect(() => {
     if (confirmed) onComplete();
   }, [confirmed, onComplete]);
+  if (section.type !== "external_link") return null;
 
   return (
     <div>
@@ -162,18 +168,26 @@ function ExternalLinkSection({ section, progress, onAttestExternal, onComplete }
 }
 
 function Quiz({ section, onQuizSubmit, onComplete }: SectionProps) {
-  if (section.type !== "quiz") return null;
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
-  const score =
-    Object.entries(answers).filter(([qid, idx]) => {
-      const q = section.questions.find((q) => q.id === qid);
-      return q && q.correctIndex === idx;
-    }).length / section.questions.length;
+
+  if (section.type !== "quiz") return null;
+
+  const totalQuestions = section.questions.length;
+  const correctCount = Object.entries(answers).filter(([qid, idx]) => {
+    const q = section.questions.find((q) => q.id === qid);
+    return q && q.correctIndex === idx;
+  }).length;
+  const score = totalQuestions > 0 ? correctCount / totalQuestions : 0;
   const passed = submitted && score >= section.passingScore;
+  const allAnswered = Object.keys(answers).length >= totalQuestions;
+
+  const selectAnswer = (qid: string, idx: number) => {
+    setAnswers((prev) => ({ ...prev, [qid]: idx }));
+  };
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-6">
       {section.questions.map((q, qi) => (
         <div key={q.id}>
           <p className="font-semibold mb-3">
@@ -187,20 +201,32 @@ function Quiz({ section, onQuizSubmit, onComplete }: SectionProps) {
               const isWrong = submitted && selected && idx !== q.correctIndex;
               return (
                 <button
+                  type="button"
                   key={idx}
                   disabled={submitted}
-                  onClick={() => setAnswers({ ...answers, [q.id]: idx })}
-                  className={`w-full text-left rounded-xl border px-4 py-3 text-sm transition-colors ${
+                  onClick={() => selectAnswer(q.id, idx)}
+                  className={`w-full text-left rounded-xl border-2 px-4 py-3 text-sm transition-all cursor-pointer disabled:cursor-default ${
                     isCorrect
-                      ? "border-primary bg-primary/10 text-foreground"
+                      ? "border-primary bg-primary/15 text-foreground"
                       : isWrong
-                      ? "border-border bg-secondary/40 text-muted-foreground"
+                      ? "border-border bg-secondary/40 text-muted-foreground line-through"
                       : selected
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card hover:border-border/80"
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-card hover:border-primary/60 hover:bg-secondary/30"
                   }`}
                 >
-                  {opt}
+                  <span className="inline-flex items-center gap-3">
+                    <span
+                      className={`h-5 w-5 rounded-full border-2 flex-shrink-0 flex items-center justify-center ${
+                        selected || isCorrect ? "border-primary bg-primary" : "border-border"
+                      }`}
+                    >
+                      {(selected || isCorrect) && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
+                      )}
+                    </span>
+                    {opt}
+                  </span>
                 </button>
               );
             })}
@@ -210,14 +236,16 @@ function Quiz({ section, onQuizSubmit, onComplete }: SectionProps) {
 
       {!submitted ? (
         <Button
+          type="button"
           onClick={() => {
             setSubmitted(true);
             onQuizSubmit(score);
             if (score >= section.passingScore) onComplete();
           }}
-          disabled={Object.keys(answers).length < section.questions.length}
+          disabled={!allAnswered}
+          className="w-full"
         >
-          Submit
+          {allAnswered ? "Submit" : `Answer ${totalQuestions - Object.keys(answers).length} more`}
         </Button>
       ) : (
         <div className={`rounded-xl border p-4 ${passed ? "border-primary/40 bg-primary/10" : "border-border bg-card"}`}>
@@ -245,8 +273,8 @@ function Quiz({ section, onQuizSubmit, onComplete }: SectionProps) {
 }
 
 function MediaPlaceholder({ section, onComplete }: SectionProps) {
-  if (section.type !== "video" && section.type !== "audio") return null;
   useEffect(() => onComplete(), [onComplete]);
+  if (section.type !== "video" && section.type !== "audio") return null;
   return (
     <div className="rounded-2xl border border-border bg-card p-8 text-center">
       <div className="text-4xl mb-2">{section.type === "video" ? "🎬" : "🎧"}</div>
