@@ -52,7 +52,8 @@ export default function HomePage() {
   const total = curriculum?.modules.length ?? 10;
   const nextModule = curriculum?.modules.find((m) => progressMap[m.id]?.status !== "completed");
   const today = todayKey();
-  const allHabits: Array<{ goal: Goal; habit: Habit }> = (goals ?? []).flatMap((g) =>
+  const trackedGoals = (goals ?? []).filter((g) => g.trackingMode !== "graduated");
+  const allHabits: Array<{ goal: Goal; habit: Habit }> = trackedGoals.flatMap((g) =>
     g.habits.map((h) => ({ goal: g, habit: h })),
   );
   const habitsDoneToday = allHabits.filter(({ habit }) => {

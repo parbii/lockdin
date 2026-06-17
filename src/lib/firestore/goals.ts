@@ -75,6 +75,7 @@ export async function createGoal(
     description: data.description,
     isPublic: data.isPublic,
     status: "active",
+    trackingMode: "active",
     createdAt: Date.now(),
     habits,
   };
@@ -198,4 +199,71 @@ export async function archiveGoal(uid: string, goalId: string) {
 
 export async function deleteGoal(uid: string, goalId: string) {
   await deleteDoc(doc(getDb(), "users", uid, "goals", goalId));
+}
+
+export async function setGoalTrackingMode(
+  uid: string,
+  goalId: string,
+  mode: "active" | "graduated",
+) {
+  await setDoc(
+    doc(getDb(), "users", uid, "goals", goalId),
+    { trackingMode: mode },
+    { merge: true },
+  );
+}
+
+export interface EditableHabit {
+  id?: string;
+  title: string;
+  metric: string;
+  dailyFrequency: number;
+}
+
+export async function updateGoal(
+  uid: string,
+  goalId: string,
+  data: {
+    title: string;
+    description?: string;
+    isPublic: boolean;
+    habits: EditableHabit[];
+  },
+): Promise<void> {
+  const goalRef = doc(getDb(), "users", uid, "goals", goalId);
+  await runTransaction(getDb(), async (tx) => {
+    const snap = await tx.get(goalRef);
+    if (!snap.exists()) throw new Error("Goal not found");
+    const existing = normalizeGoal({ id: snap.id, ...(snap.data() as Omit<Goal, "id">) });
+
+    const merged: Habit[] = data.habits.map((h) => {
+      const prior = h.id ? existing.habits.find((p) => p.id === h.id) : undefined;
+      if (prior) {
+        return {
+          ...prior,
+          title: h.title,
+          metric: h.metric,
+          dailyFrequency: Math.max(1, Math.floor(h.dailyFrequency || 1)),
+        };
+      }
+      return {
+        id: makeHabitId(),
+        title: h.title,
+        metric: h.metric,
+        dailyFrequency: Math.max(1, Math.floor(h.dailyFrequency || 1)),
+        progressHistory: {},
+      };
+    });
+
+    tx.set(
+      goalRef,
+      {
+        title: data.title,
+        description: data.description ?? "",
+        isPublic: data.isPublic,
+        habits: merged,
+      },
+      { merge: true },
+    );
+  });
 }

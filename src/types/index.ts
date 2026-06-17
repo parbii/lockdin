@@ -126,6 +126,8 @@ export interface Habit {
   lockedInAt?: number;
 }
 
+export type GoalTrackingMode = "active" | "graduated";
+
 export interface Goal {
   id: string;
   userId: string;
@@ -133,6 +135,7 @@ export interface Goal {
   description?: string;
   isPublic: boolean;
   status: "active" | "archived";
+  trackingMode: GoalTrackingMode;
   createdAt: number;
   habits: Habit[];
   lockedInAt?: number;

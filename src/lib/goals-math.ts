@@ -50,7 +50,10 @@ export function goalRepsTarget(goal: Goal): number {
 }
 
 export function normalizeGoal(raw: Goal & Record<string, unknown>): Goal {
-  if (Array.isArray(raw.habits) && raw.habits.length > 0) return raw as Goal;
+  const trackingMode = raw.trackingMode === "graduated" ? "graduated" : "active";
+  if (Array.isArray(raw.habits) && raw.habits.length > 0) {
+    return { ...raw, trackingMode } as Goal;
+  }
   const legacyHabit: Habit = {
     id: "h-legacy",
     title: raw.title,
@@ -59,7 +62,7 @@ export function normalizeGoal(raw: Goal & Record<string, unknown>): Goal {
     progressHistory: (raw.progressHistory as RepHistory) || {},
     lockedInAt: raw.lockedInAt,
   };
-  return { ...raw, habits: [legacyHabit] } as Goal;
+  return { ...raw, trackingMode, habits: [legacyHabit] } as Goal;
 }
 
 export function makeHabitId(): string {
