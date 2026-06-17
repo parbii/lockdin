@@ -686,14 +686,16 @@ function GoalLockedChoice({
         <p className="text-muted-foreground mt-4">
           Every habit hit 15 reps. This isn&apos;t a streak anymore — it&apos;s who you are.
         </p>
-        <p className="text-sm mt-6 mb-4 font-semibold">How do you want to keep this going?</p>
+        <p className="text-sm mt-6 mb-4 font-semibold">
+          Want to keep tracking, or you think you&apos;re LOCKD In for sure?
+        </p>
         <div className="space-y-2">
           <Button
             size="lg"
             className="w-full"
             onClick={() => onChoice("active")}
           >
-            Keep stacking reps
+            Keep tracking
           </Button>
           <Button
             size="lg"
@@ -701,7 +703,7 @@ function GoalLockedChoice({
             className="w-full"
             onClick={() => onChoice("graduated")}
           >
-            I&apos;ve got the swing of it
+            LOCKD In for sure
           </Button>
         </div>
         <p className="text-[11px] text-muted-foreground mt-4">
