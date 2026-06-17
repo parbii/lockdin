@@ -123,10 +123,12 @@ export interface Goal {
   title: string;
   description?: string;
   habitMetric: string;
+  dailyFrequency: number;
   isPublic: boolean;
   status: "active" | "archived";
   createdAt: number;
-  progressHistory: Record<string, boolean>;
+  progressHistory: Record<string, number | boolean>;
+  lockedInAt?: number;
 }
 
 export interface FeedPost {

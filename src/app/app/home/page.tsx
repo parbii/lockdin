@@ -16,6 +16,8 @@ import { LockdInBadge } from "@/components/ui/lockd-in-badge";
 import { listActiveGoals, checkInGoal } from "@/lib/firestore/goals";
 import { fadeUp, stagger } from "@/lib/motion";
 import { todayKey } from "@/lib/utils";
+import { computeTotalReps, repsOnDay, LOCK_IN_THRESHOLD } from "@/lib/goals-math";
+import { LockInBar } from "@/components/ui/lock-in-bar";
 import type { Goal, ModuleProgress } from "@/types";
 
 export default function HomePage() {
@@ -50,7 +52,11 @@ export default function HomePage() {
   const total = curriculum?.modules.length ?? 10;
   const nextModule = curriculum?.modules.find((m) => progressMap[m.id]?.status !== "completed");
   const today = todayKey();
-  const checkedToday = (goals ?? []).filter((g) => g.progressHistory?.[today]).length;
+  const goalsDoneToday = (goals ?? []).filter((g) => {
+    const reps = repsOnDay(g.progressHistory, today);
+    return reps >= (g.dailyFrequency || 1);
+  }).length;
+  const goalsLockedIn = (goals ?? []).filter((g) => computeTotalReps(g.progressHistory) >= LOCK_IN_THRESHOLD).length;
 
   return (
     <motion.div
@@ -114,9 +120,11 @@ export default function HomePage() {
               <Flame className="h-7 w-7 text-primary" />
             </div>
             <div>
-              <div className="text-xs uppercase tracking-wider text-muted-foreground">Today</div>
-              <div className="font-bold">{checkedToday}/{goals?.length ?? 0} habits</div>
-              <Link href="/app/goals" className="text-xs text-primary mt-1 inline-block">View goals →</Link>
+              <div className="text-xs uppercase tracking-wider text-muted-foreground">Goals</div>
+              <div className="font-bold">{goalsDoneToday}/{goals?.length ?? 0} done today</div>
+              <Link href="/app/goals" className="text-xs text-primary mt-1 inline-block">
+                {goalsLockedIn > 0 ? `${goalsLockedIn} LOCKD In →` : "View goals →"}
+              </Link>
             </div>
           </div>
         </Card>
@@ -159,51 +167,67 @@ function HabitRow({
 }) {
   const { user } = useAuth();
   const today = todayKey();
-  const done = !!goal.progressHistory?.[today];
+  const todayReps = repsOnDay(goal.progressHistory, today);
+  const totalReps = computeTotalReps(goal.progressHistory);
+  const freq = goal.dailyFrequency || 1;
+  const atDailyMax = todayReps >= freq;
+  const lockedIn = totalReps >= LOCK_IN_THRESHOLD;
   const [busy, setBusy] = useState(false);
 
   return (
     <motion.div
       whileHover={{ y: -1 }}
-      className="flex items-center gap-4 rounded-xl border border-border bg-card px-4 py-3"
+      className="rounded-xl border border-border bg-card px-4 py-3"
     >
-      <button
-        disabled={done || busy || !user}
-        onClick={async () => {
-          if (!user) return;
-          setBusy(true);
-          try {
-            await checkInGoal(user.uid, goal, userName);
-            onChecked();
-          } finally {
-            setBusy(false);
-          }
-        }}
-        className={`h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all ${
-          done ? "bg-primary border-primary" : "border-border hover:border-primary"
-        }`}
-      >
-        {done && (
-          <motion.svg
-            initial={{ pathLength: 0 }}
-            animate={{ pathLength: 1 }}
-            className="h-4 w-4 text-primary-foreground"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="3"
-          >
-            <motion.path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-          </motion.svg>
-        )}
-      </button>
-      <div className="flex-1 min-w-0">
-        <div className="font-semibold text-sm">{goal.title}</div>
-        <div className="text-xs text-muted-foreground">{goal.habitMetric}</div>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          disabled={atDailyMax || busy || !user}
+          onClick={async () => {
+            if (!user) return;
+            setBusy(true);
+            try {
+              await checkInGoal(user.uid, goal, userName);
+              onChecked();
+            } finally {
+              setBusy(false);
+            }
+          }}
+          className={`h-9 w-9 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 ${
+            atDailyMax ? "bg-primary border-primary" : "border-border hover:border-primary"
+          }`}
+          aria-label={atDailyMax ? "Daily max hit" : "Add a rep"}
+        >
+          {atDailyMax ? (
+            <svg className="h-4 w-4 text-primary-foreground" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+              <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <span className="text-base font-bold leading-none">+</span>
+          )}
+        </button>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="font-semibold text-sm truncate">{goal.title}</div>
+            {lockedIn && (
+              <span className="text-[10px] uppercase tracking-wider text-primary font-bold">LOCKD In</span>
+            )}
+            {goal.isPublic && !lockedIn && (
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Public</span>
+            )}
+          </div>
+          <div className="text-xs text-muted-foreground">{goal.habitMetric}</div>
+        </div>
+        <div className="text-right flex-shrink-0">
+          <div className="text-sm font-bold tabular-nums">
+            <span className={atDailyMax ? "text-primary" : "text-foreground"}>{todayReps}</span>
+            <span className="text-muted-foreground">/{freq}</span>
+          </div>
+        </div>
       </div>
-      {goal.isPublic && (
-        <span className="text-[10px] uppercase tracking-wider text-primary font-bold">Public</span>
-      )}
+      <div className="mt-3">
+        <LockInBar totalReps={totalReps} size="sm" showLabel={false} />
+      </div>
     </motion.div>
   );
 }

@@ -16,6 +16,7 @@ import { getDb } from "@/lib/firebase";
 import { userDoc } from "./users";
 import type { Goal } from "@/types";
 import { todayKey } from "@/lib/utils";
+import { computeTotalReps, LOCK_IN_THRESHOLD, repsOnDay } from "@/lib/goals-math";
 
 function goalsCol(uid: string) {
   return collection(getDb(), "users", uid, "goals");
@@ -34,7 +35,7 @@ export async function listActiveGoals(uid: string): Promise<Goal[]> {
 
 export async function createGoal(
   uid: string,
-  data: { title: string; description?: string; habitMetric: string; isPublic: boolean },
+  data: { title: string; description?: string; habitMetric: string; isPublic: boolean; dailyFrequency: number },
 ): Promise<string> {
   const ref = doc(goalsCol(uid));
   const goal: Omit<Goal, "id"> = {
@@ -42,6 +43,7 @@ export async function createGoal(
     title: data.title,
     description: data.description,
     habitMetric: data.habitMetric,
+    dailyFrequency: Math.max(1, Math.floor(data.dailyFrequency || 1)),
     isPublic: data.isPublic,
     status: "active",
     createdAt: Date.now(),
@@ -51,28 +53,42 @@ export async function createGoal(
   batch.set(ref, goal);
   batch.set(
     userDoc(uid),
-    { activeGoalCount: 0, updatedAt: serverTimestamp() },
+    { updatedAt: serverTimestamp() },
     { merge: true },
   );
   await batch.commit();
   return ref.id;
 }
 
+export interface CheckInResult {
+  reps: number;
+  totalReps: number;
+  justLockedIn: boolean;
+  atDailyMax: boolean;
+}
+
 export async function checkInGoal(
   uid: string,
   goal: Goal,
   userName: string,
-): Promise<void> {
+): Promise<CheckInResult | null> {
   const day = todayKey();
-  const alreadyChecked = goal.progressHistory[day];
-  if (alreadyChecked) return;
+  const freq = Math.max(1, goal.dailyFrequency || 1);
+  const todayCount = repsOnDay(goal.progressHistory, day);
+  if (todayCount >= freq) return null;
 
+  const newTodayCount = todayCount + 1;
+  const prevTotal = computeTotalReps(goal.progressHistory);
+  const newTotal = prevTotal + 1;
+  const justLockedIn = !goal.lockedInAt && newTotal >= LOCK_IN_THRESHOLD;
+
+  const goalRef = doc(getDb(), "users", uid, "goals", goal.id);
   const batch = writeBatch(getDb());
-  batch.set(
-    doc(getDb(), "users", uid, "goals", goal.id),
-    { progressHistory: { [day]: true } },
-    { merge: true },
-  );
+  const patch: Record<string, unknown> = {
+    progressHistory: { [day]: newTodayCount },
+  };
+  if (justLockedIn) patch.lockedInAt = Date.now();
+  batch.set(goalRef, patch, { merge: true });
   batch.set(
     userDoc(uid),
     { lastCheckInDate: day, updatedAt: serverTimestamp() },
@@ -82,15 +98,24 @@ export async function checkInGoal(
 
   if (goal.isPublic) {
     await addDoc(collection(getDb(), "feed"), {
-      type: "check_in",
+      type: justLockedIn ? "milestone" : "check_in",
       userId: uid,
       userName,
       goalId: goal.id,
-      body: `Checked in on "${goal.title}" — ${goal.habitMetric}`,
+      body: justLockedIn
+        ? `🔒 LOCKD In on "${goal.title}" — ${LOCK_IN_THRESHOLD} reps deep.`
+        : `Checked in on "${goal.title}" — rep ${newTotal} of ${LOCK_IN_THRESHOLD}`,
       createdAt: Date.now(),
       reactions: {},
     });
   }
+
+  return {
+    reps: newTodayCount,
+    totalReps: newTotal,
+    justLockedIn,
+    atDailyMax: newTodayCount >= freq,
+  };
 }
 
 export async function archiveGoal(uid: string, goalId: string) {

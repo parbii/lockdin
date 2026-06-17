@@ -2,13 +2,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
-import { Plus, Target } from "lucide-react";
+import { Plus, Target, Lock, Plus as PlusIcon } from "lucide-react";
+import confetti from "canvas-confetti";
 import { useAuth } from "@/components/providers";
 import { listActiveGoals, createGoal, checkInGoal, archiveGoal } from "@/lib/firestore/goals";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LockInBar } from "@/components/ui/lock-in-bar";
 import { fadeUp, stagger } from "@/lib/motion";
 import { todayKey } from "@/lib/utils";
+import { computeTotalReps, repsOnDay, LOCK_IN_THRESHOLD } from "@/lib/goals-math";
 import type { Goal } from "@/types";
 
 export default function GoalsPage() {
@@ -19,6 +22,7 @@ export default function GoalsPage() {
     queryFn: () => listActiveGoals(user!.uid),
   });
   const [open, setOpen] = useState(false);
+  const [celebrate, setCelebrate] = useState<Goal | null>(null);
 
   return (
     <motion.div
@@ -43,7 +47,7 @@ export default function GoalsPage() {
             <Target className="h-10 w-10 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-bold mb-2">No active goals</h3>
             <p className="text-sm text-muted-foreground mb-6 max-w-sm mx-auto">
-              Pick one habit you'll do every day. Small enough that skipping feels worse than doing it.
+              Pick one habit. Set the daily frequency you can sustain. {LOCK_IN_THRESHOLD} reps and you&apos;re LOCKD In.
             </p>
             <Button onClick={() => setOpen(true)}>Create your first</Button>
           </div>
@@ -52,7 +56,12 @@ export default function GoalsPage() {
         <div className="space-y-3">
           {goals.map((g) => (
             <motion.div key={g.id} variants={fadeUp}>
-              <GoalCard goal={g} userName={profile?.name || "Student"} onChanged={refetch} />
+              <GoalCard
+                goal={g}
+                userName={profile?.name || "Student"}
+                onChanged={refetch}
+                onLockedIn={(g) => setCelebrate(g)}
+              />
             </motion.div>
           ))}
         </div>
@@ -69,70 +78,96 @@ export default function GoalsPage() {
           />
         )}
       </AnimatePresence>
+
+      <AnimatePresence>
+        {celebrate && <LockInCelebration goal={celebrate} onClose={() => setCelebrate(null)} />}
+      </AnimatePresence>
     </motion.div>
   );
 }
 
-function GoalCard({ goal, userName, onChanged }: { goal: Goal; userName: string; onChanged: () => void }) {
+function GoalCard({
+  goal,
+  userName,
+  onChanged,
+  onLockedIn,
+}: {
+  goal: Goal;
+  userName: string;
+  onChanged: () => void;
+  onLockedIn: (goal: Goal) => void;
+}) {
   const { user } = useAuth();
   const today = todayKey();
-  const done = !!goal.progressHistory?.[today];
-  const last7 = lastNDays(7);
-  const streak = computeStreak(goal.progressHistory);
+  const todayReps = repsOnDay(goal.progressHistory, today);
+  const totalReps = computeTotalReps(goal.progressHistory);
+  const lockedIn = totalReps >= LOCK_IN_THRESHOLD || !!goal.lockedInAt;
+  const freq = goal.dailyFrequency || 1;
+  const atDailyMax = todayReps >= freq;
   const [busy, setBusy] = useState(false);
 
+  const handleCheckIn = async () => {
+    if (!user) return;
+    setBusy(true);
+    try {
+      const result = await checkInGoal(user.uid, goal, userName);
+      if (result?.justLockedIn) {
+        fireConfetti();
+        onLockedIn(goal);
+      }
+      onChanged();
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <motion.div whileHover={{ y: -2 }} className="rounded-2xl border border-border bg-card p-5">
-      <div className="flex items-start justify-between gap-4">
+    <motion.div whileHover={{ y: -2 }} className={`rounded-2xl border bg-card p-5 ${lockedIn ? "border-primary/40" : "border-border"}`}>
+      <div className="flex items-start justify-between gap-4 mb-4">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 flex-wrap">
             <h3 className="font-bold tracking-tight">{goal.title}</h3>
+            {lockedIn && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-primary/15 text-primary border border-primary/40 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider">
+                <Lock className="h-2.5 w-2.5" /> LOCKD In
+              </span>
+            )}
             {goal.isPublic && (
-              <span className="text-[10px] uppercase tracking-wider text-primary font-bold">Public</span>
+              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Public</span>
             )}
           </div>
           <p className="text-xs text-muted-foreground">{goal.habitMetric}</p>
           {goal.description && <p className="text-xs text-muted-foreground mt-2">{goal.description}</p>}
         </div>
+        <div className="text-right">
+          <div className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Today</div>
+          <div className="text-lg font-bold tabular-nums">
+            <span className={atDailyMax ? "text-primary" : "text-foreground"}>{todayReps}</span>
+            <span className="text-muted-foreground"> / {freq}</span>
+          </div>
+        </div>
+      </div>
+
+      <LockInBar totalReps={totalReps} />
+
+      <div className="flex items-center gap-2 mt-4">
         <Button
           size="sm"
-          variant={done ? "secondary" : "primary"}
-          disabled={done || busy || !user}
-          onClick={async () => {
-            if (!user) return;
-            setBusy(true);
-            try {
-              await checkInGoal(user.uid, goal, userName);
-              onChanged();
-            } finally {
-              setBusy(false);
-            }
-          }}
+          className="flex-1"
+          variant={atDailyMax ? "secondary" : "primary"}
+          disabled={atDailyMax || busy || !user}
+          onClick={handleCheckIn}
         >
-          {done ? "✓ Today" : "Check in"}
+          <PlusIcon className="h-3.5 w-3.5" />
+          {atDailyMax ? "Daily max hit — back tomorrow" : lockedIn ? "Bank another rep" : "Check in"}
         </Button>
-      </div>
-
-      <div className="mt-4 flex items-center justify-between">
-        <div className="flex gap-1">
-          {last7.map((d) => {
-            const hit = !!goal.progressHistory?.[d];
-            return <div key={d} className={`h-7 w-7 rounded-md ${hit ? "bg-primary" : "bg-secondary"}`} title={d} />;
-          })}
-        </div>
-        <div className="text-xs">
-          <span className="text-muted-foreground">Streak</span> <span className="text-primary font-bold tabular-nums">{streak}</span>
-        </div>
-      </div>
-
-      <div className="mt-3 pt-3 border-t border-border flex justify-end">
         <button
           onClick={async () => {
             if (!user || !confirm("Archive this goal?")) return;
             await archiveGoal(user.uid, goal.id);
             onChanged();
           }}
-          className="text-[11px] text-muted-foreground hover:text-foreground"
+          className="text-[11px] text-muted-foreground hover:text-foreground px-2"
         >
           Archive
         </button>
@@ -146,6 +181,7 @@ function CreateGoalDialog({ onClose, onCreated }: { onClose: () => void; onCreat
   const [title, setTitle] = useState("");
   const [habitMetric, setHabitMetric] = useState("");
   const [description, setDescription] = useState("");
+  const [dailyFrequency, setDailyFrequency] = useState(1);
   const [isPublic, setIsPublic] = useState(true);
   const [busy, setBusy] = useState(false);
 
@@ -162,10 +198,10 @@ function CreateGoalDialog({ onClose, onCreated }: { onClose: () => void; onCreat
         animate={{ y: 0, opacity: 1 }}
         exit={{ y: 20, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        className="bg-card border border-border rounded-3xl p-6 w-full max-w-md"
+        className="bg-card border border-border rounded-3xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
       >
         <h2 className="text-xl font-bold mb-1">New goal</h2>
-        <p className="text-xs text-muted-foreground mb-6">Make it small enough that skipping feels worse than doing.</p>
+        <p className="text-xs text-muted-foreground mb-6">{LOCK_IN_THRESHOLD} reps to LOCKD In. Higher frequency = faster lock-in.</p>
 
         <div className="space-y-3">
           <div>
@@ -173,15 +209,49 @@ function CreateGoalDialog({ onClose, onCreated }: { onClose: () => void; onCreat
             <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Run a mile" className="mt-1" />
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Daily habit</label>
-            <Input value={habitMetric} onChange={(e) => setHabitMetric(e.target.value)} placeholder="One mile a day" className="mt-1" />
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Habit</label>
+            <Input value={habitMetric} onChange={(e) => setHabitMetric(e.target.value)} placeholder="One mile" className="mt-1" />
           </div>
           <div>
             <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description (optional)</label>
             <Input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Training for a half marathon" className="mt-1" />
           </div>
 
-          <label className="flex items-center justify-between rounded-xl border border-border p-4 cursor-pointer">
+          <div>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2 block">Daily frequency</label>
+            <div className="grid grid-cols-4 gap-2">
+              {[1, 2, 3, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setDailyFrequency(n)}
+                  className={`rounded-xl border-2 px-3 py-3 text-sm font-bold transition-all ${
+                    dailyFrequency === n
+                      ? "border-primary bg-primary/10 text-foreground"
+                      : "border-border bg-card text-muted-foreground hover:border-primary/60"
+                  }`}
+                >
+                  {n}×<span className="block text-[10px] font-normal mt-0.5 uppercase tracking-wider">a day</span>
+                </button>
+              ))}
+            </div>
+            <div className="mt-2 flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] text-muted-foreground uppercase tracking-wider">Custom:</span>
+              <Input
+                type="number"
+                min={1}
+                max={50}
+                value={dailyFrequency}
+                onChange={(e) => setDailyFrequency(Math.max(1, parseInt(e.target.value) || 1))}
+                className="h-8 w-20 text-sm"
+              />
+              <span className="text-[11px] text-muted-foreground">
+                {daysToLockIn(dailyFrequency)} day{daysToLockIn(dailyFrequency) === 1 ? "" : "s"} minimum to LOCKD In
+              </span>
+            </div>
+          </div>
+
+          <label className="flex items-center justify-between rounded-xl border border-border p-4 cursor-pointer mt-2">
             <div>
               <div className="text-sm font-semibold">Public</div>
               <div className="text-xs text-muted-foreground">Check-ins show up in your community feed.</div>
@@ -209,7 +279,7 @@ function CreateGoalDialog({ onClose, onCreated }: { onClose: () => void; onCreat
               if (!user) return;
               setBusy(true);
               try {
-                await createGoal(user.uid, { title, habitMetric, description, isPublic });
+                await createGoal(user.uid, { title, habitMetric, description, isPublic, dailyFrequency });
                 onCreated();
               } finally {
                 setBusy(false);
@@ -224,32 +294,47 @@ function CreateGoalDialog({ onClose, onCreated }: { onClose: () => void; onCreat
   );
 }
 
-function lastNDays(n: number): string[] {
-  const out: string[] = [];
-  for (let i = n - 1; i >= 0; i--) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    out.push(d.toISOString().slice(0, 10));
-  }
-  return out;
+function LockInCelebration({ goal, onClose }: { goal: Goal; onClose: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ scale: 0.9, y: 30 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+        className="max-w-md w-full rounded-3xl bg-card border border-primary/50 p-8 text-center shadow-[0_0_80px_-10px_hsl(var(--primary)/0.6)]"
+      >
+        <Lock className="h-12 w-12 text-primary mx-auto mb-4" />
+        <div className="text-xs uppercase tracking-widest text-primary font-bold mb-2">Habit locked in</div>
+        <h2 className="text-3xl font-bold tracking-tight">{goal.title}</h2>
+        <p className="text-muted-foreground mt-3">
+          {LOCK_IN_THRESHOLD} reps deep. This isn&apos;t a streak anymore — it&apos;s who you are.
+        </p>
+        <Button className="mt-8 w-full" size="lg" onClick={onClose}>
+          Keep going
+        </Button>
+      </motion.div>
+    </motion.div>
+  );
 }
 
-function computeStreak(history: Record<string, boolean> = {}): number {
-  let streak = 0;
-  const d = new Date();
-  while (true) {
-    const key = d.toISOString().slice(0, 10);
-    if (history[key]) {
-      streak++;
-      d.setDate(d.getDate() - 1);
-    } else {
-      // allow today to be uncheckd without breaking
-      if (streak === 0 && key === todayKey()) {
-        d.setDate(d.getDate() - 1);
-        continue;
-      }
-      break;
-    }
-  }
-  return streak;
+function daysToLockIn(freq: number): number {
+  return Math.ceil(LOCK_IN_THRESHOLD / Math.max(1, freq));
+}
+
+function fireConfetti() {
+  if (typeof window === "undefined") return;
+  confetti({
+    particleCount: 150,
+    spread: 90,
+    startVelocity: 42,
+    origin: { y: 0.7 },
+    colors: ["#FF1493", "#ffffff", "#FF6FB5"],
+  });
 }
