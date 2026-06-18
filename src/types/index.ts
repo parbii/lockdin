@@ -128,17 +128,33 @@ export interface Habit {
 
 export type GoalTrackingMode = "active" | "graduated";
 
+export type GoalCategory =
+  | "run"
+  | "train"
+  | "read"
+  | "write"
+  | "study"
+  | "meditate"
+  | "hydrate"
+  | "sleep"
+  | "build"
+  | "practice"
+  | "connect"
+  | "other";
+
 export interface Goal {
   id: string;
   userId: string;
   title: string;
   description?: string;
+  category?: GoalCategory;
   isPublic: boolean;
   status: "active" | "archived";
   trackingMode: GoalTrackingMode;
   createdAt: number;
   habits: Habit[];
   lockedInAt?: number;
+  lockedInCommunityId?: string;
   habitMetric?: string;
   dailyFrequency?: number;
   progressHistory?: Record<string, number | boolean>;
@@ -152,6 +168,7 @@ export interface FeedPost {
   userAvatar?: string;
   orgId?: string;
   goalId?: string;
+  habitId?: string;
   body: string;
   createdAt: number;
   reactions: Record<string, number>;
@@ -166,5 +183,7 @@ export interface Organization {
   leaderIds: string[];
   memberCount: number;
   isApproved: boolean;
+  isLockedInCommunity?: boolean;
+  category?: GoalCategory;
   emoji?: string;
 }

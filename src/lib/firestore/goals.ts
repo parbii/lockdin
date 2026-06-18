@@ -95,6 +95,7 @@ export interface HabitCheckInResult {
   goalJustLocked: boolean;
   atDailyMax: boolean;
   newReps: number;
+  joinedCommunityId?: string;
 }
 
 interface TxResult {
